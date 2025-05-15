@@ -1,0 +1,24 @@
+@startuml Login
+actor Client
+participant Server
+participant Database
+
+Client -> Server: POST /login\n{ email, password }
+Server -> Server: sanitize payload\nvalidate fields
+Server -> Database: Checks the database if the user exists
+alt user found
+    Database --> Server: User found with the email
+    Server -> Database: Checks the password against the database
+    alt password matching 
+        Database --> Server : Password matches
+        Server -> Server : Generating the JWT
+        Server --> Client : 200 Success\nSending the JWT\n{"message" : "Connection successful"}
+    else password not matching
+        Database --> Server : Password not matching 
+        Server --> Client : 401 Unauthorized\n{"message":"Connection unsuccessful"}
+    end alt 
+else user not found
+    Database --> Server: No user found with the email
+    Server --> Client: 401 Unauthorized\n{"message":"Connection unsuccessful"}
+end alt
+@enduml

@@ -1,0 +1,19 @@
+@startuml Post creation
+actor User
+participant Client
+participant Server
+database DB
+
+User -> Client: Create new post(title, content)
+Client -> Server: Check if user has post with same title
+Server -> DB: SELECT * FROM posts WHERE user_id = ? AND title = ?
+DB --> Server: returns the result of the query
+alt post with same title exists
+    Server --> Client: Title already exists
+else title not used
+    Client -> Server: Submit post(title, content)
+    Server -> DB: INSERT INTO posts (user_id, title, content) VALUES (?, ?, ?)
+    DB --> Server: Insert confirmation
+    Server --> Client: Success message
+end
+@enduml

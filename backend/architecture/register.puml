@@ -1,0 +1,18 @@
+@startuml Register
+actor Client
+participant Server
+participant Database
+
+Client -> Server: POST /register\n{ email, password }
+Server -> Server: sanitize payload\nvalidate fields
+Server -> Database: Checks whether the user already exists or not
+alt user not found
+    Database --> Server: No user with this email
+    Server -> Database: Creates a new user with email and password
+    Database --> Server: Successful creation of user 
+    Server --> Client: 201 Created\n{ "message": "Account created" }
+else user exists
+    Database --> Server: User found with this email
+    Server --> Client: 400 Bad Request\n{ "detail": "User already exists" }
+end
+@enduml
