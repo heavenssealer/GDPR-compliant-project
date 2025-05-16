@@ -15,7 +15,7 @@ on:
 jobs:
   security:
     name: Snyk Analysis
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
       - name: Run Snyk to check for vulnerabilities
@@ -25,7 +25,7 @@ jobs:
 
   sonarqube:
     name: SonarQube Analysis
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
