@@ -18,13 +18,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Install Snyk CLI
         run: npm install -g snyk
+
       - name: Authenticate Snyk
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
+
       - name: Run Snyk to check for vulnerabilities
         continue-on-error: true
         run: snyk test --all-projects
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   sonarqube:
     name: SonarQube Analysis
@@ -34,30 +39,31 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 🐍 Setup Python, install deps, and run pytest + coverage
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
+
       - name: Run tests with coverage & xUnit reporting
+        working-directory: backend
         run: |
           pytest \
-            --junitxml=reports/junit.xml \
+            --junitxml=../reports/junit.xml \
             --cov=app \
-            --cov-report=xml:reports/coverage.xml
+            --cov-report=xml:../reports/coverage.xml
 
-      # 🔍 SonarQube scan, pointing at the coverage & test reports
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
         with:
           args: >
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-            -Dsonar.sources=app
-            -Dsonar.tests=app
+            -Dsonar.sources=backend/app
+            -Dsonar.tests=backend/tests
             -Dsonar.python.xunit.reportPath=reports/junit.xml
             -Dsonar.python.coverage.reportPaths=reports/coverage.xml
         env:
