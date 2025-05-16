@@ -32,6 +32,7 @@ Pygments==2.19.1
 PyJWT==2.10.1
 pymongo==4.12.1
 pytest==8.3.5
+pytest-asyncio==0.26.0
 pytest-cov==6.1.1
 python-dotenv==1.1.0
 python-multipart==0.0.20

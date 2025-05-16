@@ -9,3 +9,4 @@ cert.pem
 **/__init__.py
 .DS_Store
 **/logfile
+**/.vscode
