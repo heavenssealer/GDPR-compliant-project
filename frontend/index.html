@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Front-End</title>
+  <!-- Bulma CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
+  >
+</head>
+<body>
+  <section class="section">
+    <div class="container">
+      <h1 class="title has-text-centered">Front-end : "blog" website (or something similar?)</h1>
+      <div id="output" class="notification is-light">
+        <em>Responses will appear here</em>
+      </div>
+
+      <!-- REGISTER -->
+      <div class="box">
+        <h2 class="subtitle">Register</h2>
+        <div class="field">
+          <label class="label">Email</label>
+          <div class="control">
+            <input id="reg-email" class="input" type="email" placeholder="you@example.com">
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Password</label>
+          <div class="control">
+            <input id="reg-pass" class="input" type="password" placeholder="••••••••">
+          </div>
+        </div>
+        <div class="control">
+          <button class="button is-primary" onclick="register()">Register</button>
+        </div>
+      </div>
+
+      <!-- LOGIN -->
+      <div class="box">
+        <h2 class="subtitle">Login</h2>
+        <div class="field">
+          <label class="label">Email</label>
+          <div class="control">
+            <input id="login-email" class="input" type="email" placeholder="you@example.com">
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Password</label>
+          <div class="control">
+            <input id="login-pass" class="input" type="password" placeholder="••••••••">
+          </div>
+        </div>
+        <div class="control">
+          <button class="button is-link" onclick="login()">Log In</button>
+        </div>
+      </div>
+
+      <!-- POSTS CRUD -->
+      <div class="box">
+        <h2 class="subtitle">Posts CRUD</h2>
+        <div class="field">
+          <label class="label">Title</label>
+          <div class="control">
+            <input id="post-title" class="input" type="text" placeholder="Post title">
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Content</label>
+          <div class="control">
+            <textarea id="post-content" class="textarea" rows="3" placeholder="Your content…"></textarea>
+          </div>
+        </div>
+        <div class="buttons">
+          <button class="button is-success" onclick="createPost()">Create</button>
+          <button class="button is-info" onclick="readPost()">Read</button>
+          <button class="button is-warning" onclick="updatePost()">Update</button>
+          <button class="button is-danger" onclick="deletePost()">Delete</button>
+        </div>
+      </div>
+
+      <!-- USER SELF -->
+      <div class="box">
+        <h2 class="subtitle">User Management</h2>
+        <div class="field">
+          <label class="label">New Email</label>
+          <div class="control">
+            <input id="user-new-email" class="input" type="email" placeholder="new@example.com">
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Confirm Password</label>
+          <div class="control">
+            <input id="user-pass" class="input" type="password" placeholder="••••••••">
+          </div>
+        </div>
+        <div class="buttons">
+          <button class="button is-link" onclick="updateEmail()">Update Email</button>
+          <button class="button is-primary" onclick="getUser()">Get My Info</button>
+          <button class="button is-danger" onclick="deleteUser()">Delete My Account</button>
+        </div>
+      </div>
+
+      <!-- ADMIN: list all users -->
+      <div class="box">
+        <h2 class="subtitle">Admin: List All Users</h2>
+        <div class="control">
+          <button class="button is-dark" onclick="getUsers()">Get Users</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const API = 'https://localhost:443'; // adjust if needed
+    const outEl = document.getElementById('output');
+
+    function show(data) {
+    outEl.className = 'notification is-light';
+    outEl.innerHTML = '';                // clear previous
+    const pre = document.createElement('pre');
+    pre.textContent = JSON.stringify(data, null, 2);
+    outEl.appendChild(pre);
+  }
+
+    function errorMsg(msg) {
+      outEl.className = 'notification is-danger';
+      outEl.textContent = msg;
+    }
+
+    function authHeaders() {
+      const token = localStorage.getItem('jwt');
+      return token ? { 'Authorization': 'Bearer ' + token } : {};
+    }
+
+    async function request(path, opts = {}) {
+      try {
+        const res = await fetch(API + path, opts);
+        const data = await res.json();
+        if (!res.ok) throw data;
+        return data;
+      } catch (err) {
+        errorMsg(err.detail || JSON.stringify(err));
+        throw err;
+      }
+    }
+
+    async function register() {
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-pass').value;
+      const data = await request('/register', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', ...authHeaders() },
+        body: JSON.stringify({ email, password })
+      });
+      show(data);
+    }
+
+    async function login() {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-pass').value;
+      const data = await request('/login', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      show(data);
+      if (data.token) localStorage.setItem('jwt', data.token);
+    }
+
+    async function createPost() {
+      const title = document.getElementById('post-title').value;
+      const content = document.getElementById('post-content').value;
+      const data = await request('/post', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', ...authHeaders() },
+        body: JSON.stringify({ title, content })
+      });
+      show(data);
+    }
+
+    async function readPost() {
+    const title = document.getElementById('post-title').value;
+    const url = '/post?' + new URLSearchParams({ title });
+    const data = await request(url, {
+      method: "GET",
+      headers: authHeaders()
+    });
+    show(data);
+  }
+
+    async function updatePost() {
+      const title = document.getElementById('post-title').value;
+      const content = document.getElementById('post-content').value;
+      const data = await request('/post', {
+        method: 'PUT',
+        headers: { 'Content-Type':'application/json', ...authHeaders() },
+        body: JSON.stringify({ title, content })
+      });
+      show(data);
+    }
+
+    async function deletePost() {
+      const title = document.getElementById('post-title').value;
+      const data = await request('/post', {
+        method: 'DELETE',
+        headers: { 'Content-Type':'application/json', ...authHeaders() },
+        body: JSON.stringify({ title })
+      });
+      show(data);
+    }
+
+    async function updateEmail() {
+      const email = document.getElementById('user-new-email').value;
+      const password = document.getElementById('user-pass').value;
+      const data = await request('/user', {
+        method: 'PUT',
+        headers: { 'Content-Type':'application/json', ...authHeaders() },
+        body: JSON.stringify({ email, password })
+      });
+      show(data);
+    }
+
+    async function getUser() {
+      const data = await request('/user', { headers: authHeaders() });
+      show(data);
+    }
+
+    async function deleteUser() {
+      const email = document.getElementById('user-new-email').value;
+      const password = document.getElementById('user-pass').value;
+      const data = await request('/user', {
+        method: 'DELETE',
+        headers: { 'Content-Type':'application/json', ...authHeaders() },
+        body: JSON.stringify({ email, password })
+      });
+      show(data);
+      if (data.detail === "Deleted all user related content") {
+        localStorage.removeItem('jwt');
+      }
+    }
+
+    async function getUsers() {
+      const data = await request('/users', { headers: authHeaders() });
+      show(data);
+    }
+  </script>
+</body>
+</html>

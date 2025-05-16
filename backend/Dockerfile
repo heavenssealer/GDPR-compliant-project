@@ -1,6 +1,6 @@
 FROM python:3.11-alpine
 
-WORKDIR /usr/src/app
+WORKDIR /usr/src/backend
 
 # Alpine uses apk, not apt
 RUN apk add --no-cache ca-certificates
@@ -12,9 +12,7 @@ RUN pip install --no-cache-dir --upgrade pip \
 
 # Copy your FastAPI code
 COPY app ./app
-
-# Copy .env if you need it
-COPY .env ./
+COPY .env cert.pem ./
 
 # Copy the entire certs folder
 COPY certs ./certs
