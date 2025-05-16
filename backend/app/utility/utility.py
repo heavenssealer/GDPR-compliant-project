@@ -11,7 +11,7 @@ import os
 load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI")
-SECRET_KEY = os.getenv("JWT_SECRET", "SECRET")
+SECRET_KEY = os.getenv("JWT_SECRET")
 LIVING_TIME = os.getenv("ACCESS_TOKEN_EXPIRES_AFTER_MINUTES")
 ALGORITHM = "HS256"
 
