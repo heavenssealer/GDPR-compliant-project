@@ -1,4 +1,5 @@
-name: Build & SonarQube
+name: Build, SonarQube & Snyk Security Scan
+
 on:
   push:
     branches: [ main, backend ]
@@ -8,7 +9,21 @@ on:
     secrets:
       SONAR_TOKEN:
         required: true
+      SNYK_TOKEN:
+        required: true
+
 jobs:
+  security:
+    name: Snyk Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/maven@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
   sonarqube:
     name: SonarQube Analysis
     runs-on: macos-latest
