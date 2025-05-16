@@ -15,7 +15,6 @@ from app.models.connectionDetails import ConnectionDetails
 from app.middlewares.authenticationMiddleware import authentication_middleware
 from app.middlewares.authorizationMiddleware import authorization_middleware
 from app.middlewares.sanitizationMiddleware import sanitization_middleware
-from app.database.db import connect_to_db
 from app.utility.utility import access_collection, get_all_users
 from app.utility.utility import generate_jwt
 
