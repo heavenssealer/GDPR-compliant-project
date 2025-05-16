@@ -1,0 +1,33 @@
+@startuml login2
+|Login Process|
+start
+:Fetch user record;
+:connection_tries = user.connection_tries;
+:last_connection_try = user.last_connection_try;
+
+if (connection_tries < 5?) then (yes)
+  :Attempt connection;
+  if (connection success?) then (yes)
+    :connection_tries = 0;
+    :last_connection_try = now();
+  else (no)
+    :connection_tries = connection_tries + 1;
+  endif
+else (no)
+  if (now() - last_connection_try > 1h?) then (yes)
+    :connection_tries = 0;
+    :Attempt connection;
+    if (connection success?) then (yes)
+      :connection_tries = 0;
+      :last_connection_try = now();
+    else (no)
+      :connection_tries = connection_tries + 1;
+    endif
+  else (no)
+    :Deny login – too many attempts;
+  endif
+endif
+
+:Update user record;
+stop
+@enduml

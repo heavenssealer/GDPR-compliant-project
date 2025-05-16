@@ -1,0 +1,18 @@
+@startuml Post modification
+actor User
+participant Client
+participant Server
+database DB
+
+User -> Client: Modify post(title, content)
+Client -> Server: Request modification with title and new content
+Server -> DB: if DB.hasPost(userId, title)
+DB --> Server: returns the result of the query
+alt post exists
+    Server -> DB: DB.updatePost(userId, title, content)
+    DB --> Server: update confirmation
+    Server --> Client: Success message
+else post not found
+    Server --> Client: Post doesn’t exist
+end
+@enduml
