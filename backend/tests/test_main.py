@@ -1,6 +1,6 @@
 import os
 import jwt
-import pytest
+
 from fastapi.testclient import TestClient
 from datetime import timedelta, datetime, timezone
 
