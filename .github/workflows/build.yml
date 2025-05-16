@@ -62,8 +62,8 @@ jobs:
         with:
           args: >
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-            -Dsonar.sources=.
-            -Dsonar.tests=.
+            -Dsonar.sources=./app
+            -Dsonar.tests=./app
             -Dsonar.python.xunit.reportPath=../reports/junit.xml
             -Dsonar.python.coverage.reportPaths=../reports/coverage.xml
         env:
