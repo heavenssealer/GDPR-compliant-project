@@ -2,6 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Query
 from starlette.status import HTTP_409_CONFLICT, HTTP_500_INTERNAL_SERVER_ERROR, HTTP_201_CREATED, HTTP_200_OK, HTTP_401_UNAUTHORIZED, HTTP_429_TOO_MANY_REQUESTS, HTTP_404_NOT_FOUND
 from dotenv import load_dotenv
 from markupsafe import escape
@@ -38,11 +40,19 @@ AF = "Authentication failure"
 # initializing the app 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware, 
+    allow_origins=["http://localhost:8080"],
+    allow_methods=["POST", "GET", "OPTIONS", "PUT", "DELETE"], 
+    allow_headers=["Content-Type", "Authorization"], 
+    allow_credentials=True
+)
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
         status_code=422,
-        content={"error": "Invalid connection details : check mail format or password length (13 - 50 characters)"},
+        content={"error": "Invalid connection details : check mail or password format (13 - 50 characters, uppercase, lowercase, number, special character (no <>))"},
     )
 
 # middlewares for sanitization and authentication 
@@ -85,6 +95,7 @@ async def login(data : ConnectionDetails):
                     return JSONResponse({"detail" : "Too many connection attempts"}, status_code=HTTP_429_TOO_MANY_REQUESTS)
             # we check if the password is correct by comparing against the database
             if pwd_context.verify(password, user['password']): 
+                users.update_one({"email" : email}, {"$set" : {"connection_attempts" : 0, "last_connection_attempt" : datetime.now(timezone.utc)}})
                 user_id = str(user['_id'])
                 # generating the JWT 
                 encoded_jwt = generate_jwt(user_id=user_id, email=email)
@@ -139,9 +150,9 @@ async def add_post(req : Request, post : Post):
     except Exception : 
         return JSONResponse({"detail" : ISE}, status_code=HTTP_500_INTERNAL_SERVER_ERROR)
 
-@app.get('/post')
-async def get_post(req : Request, post : Post): 
-    title = escape(post.title)
+@app.get("/post")
+async def get_post(req: Request, title: str = Query(..., min_length=1)):
+    title = escape(title)
     user = req.state.user['user_id']
     try : 
         posts = await access_collection("posts")
@@ -260,6 +271,7 @@ async def get_users(req : Request):
         for i in range(len(users)): 
             users[i].update({"_id" : str(users[i]["_id"])})
             users[i].update({"last_connection_attempt" : str(users[i]["last_connection_attempt"])})
+            users[i].update({"password": "*********************"})
         return JSONResponse({"detail" : users}, status_code=HTTP_200_OK)
     except Exception  : 
         return JSONResponse({"detail" : ISE}, status_code=HTTP_500_INTERNAL_SERVER_ERROR)
