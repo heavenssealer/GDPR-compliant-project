@@ -1,0 +1,38 @@
+@startuml register_flow
+title POST /register Flow
+
+actor User
+participant "Client" as Client
+participant "Register Handler" as Handler
+database "MongoDB\n(users)" as DB
+
+User -> Client: Fill form (email, password)
+Client -> Handler: POST /register\n{email, password}
+activate Handler
+
+Handler -> Handler: escape(email)\nescape(password)
+Handler -> Handler: hashed_password = hash(password)
+
+Handler -> DB: find_one({"email": email})
+activate DB
+DB --> Handler: existing_user?
+deactivate DB
+
+alt existing_user
+    Handler --> Client: 409 CONFLICT\n{"detail": "The account already exists"}
+else new_user
+    Handler -> DB: insert_one({\n email, hashed_password,\n attempts=0,\n last_connection=now,\n role="user" })
+    activate DB
+    DB --> Handler: insert confirmation
+    deactivate DB
+
+    Handler --> Client: 201 CREATED\n{"detail": "Account created successfully"}
+end
+
+deactivate Handler
+
+== Error Handling ==
+Handler -> Handler: (Exception caught)
+Handler --> Client: 500 INTERNAL_SERVER_ERROR\n{"detail": "Internal server error"}
+
+@enduml

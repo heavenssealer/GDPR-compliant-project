@@ -19,6 +19,10 @@ async def authentication_middleware(req: Request, call_next):
     if req.url.path in EXEMPT_PATHS:
         return await call_next(req)
     
+    # Let CORS preflight through
+    if req.method == "OPTIONS":
+        return await call_next(req)
+    
     try:
         auth = req.headers.get("Authorization")
         if not auth:

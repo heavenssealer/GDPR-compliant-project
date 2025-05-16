@@ -1,0 +1,19 @@
+@startuml Post update
+actor User
+participant Client
+participant Server
+database DB
+
+User -> Client: Update post(title, new_content)
+Client -> Server: Check if post exists for user
+Server -> DB: SELECT * FROM posts WHERE user_id = ? AND title = ?
+DB --> Server: returns the result of the query
+alt post exists
+    Client -> Server: Submit update(title, new_content)
+    Server -> DB: UPDATE posts SET content = ? WHERE user_id = ? AND title = ?
+    DB --> Server: Update confirmation
+    Server --> Client: Success message
+else post not found
+    Server --> Client: Post not found error
+end
+@enduml
