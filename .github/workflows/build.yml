@@ -62,7 +62,7 @@ jobs:
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
             -Dsonar.sources=backend/app
             -Dsonar.tests=backend/tests   # point directly at the tests folder
-            -Dsonar.python.xunit.reportPath=reports/junit.xml
-            -Dsonar.python.coverage.reportPaths=reports/coverage.xml
+            -Dsonar.python.xunit.reportPath=../reports/junit.xml
+            -Dsonar.python.coverage.reportPaths=../reports/coverage.xml
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
