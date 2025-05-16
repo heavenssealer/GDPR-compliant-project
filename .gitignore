@@ -5,6 +5,8 @@
 **/htmlcov
 .coverage
 cert.pem
+local_cert.pem
+local_key.pem
 .pytest_cache
 **/__init__.py
 .DS_Store

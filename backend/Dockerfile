@@ -13,4 +13,4 @@ COPY app ./app
 COPY .env cert.pem ./
 
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "443", "--ssl-certfile", "local_cert.pem", "--ssl-keyfile", "local_key.pem"]
