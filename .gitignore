@@ -12,3 +12,6 @@ local_key.pem
 .DS_Store
 **/logfile
 **/.vscode
+**/localhost-key.pem 
+**/localhost.pem 
+*.pem 

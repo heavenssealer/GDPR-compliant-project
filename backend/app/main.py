@@ -47,9 +47,9 @@ app.add_middleware(HTTPSRedirectMiddleware)
 
 app.add_middleware(
     CORSMiddleware, 
-    allow_origins=["http://localhost:8080"],
+    allow_origins=["http://localhost:8080", "https://localhost:8080", "https://127.0.0.1:8080"],
     allow_methods=["POST", "GET", "OPTIONS", "PUT", "DELETE"], 
-    allow_headers=["Content-Type", "Authorization"], 
+    allow_headers=["*"], 
     allow_credentials=True
 )
 
@@ -105,15 +105,6 @@ async def login(data : ConnectionDetails):
                 # generating the JWT 
                 encoded_jwt = generate_jwt(user_id=user_id, email=email)
                 response = JSONResponse({"detail" : "Authentication success", "token" : encoded_jwt}, status_code=HTTP_200_OK)
-                response.set_cookie(
-                    key="access_token",
-                    value=encoded_jwt,
-                    httponly=True,
-                    secure=False ,  # needs to be TRUE if HTTPS (prod)
-                    samesite="Lax",
-                    path="/", 
-                    max_age=60*60*24*7  # 7 days
-                )
                 return response
             else : 
                 # if incorrect password, adding 1 connection attempt
@@ -293,43 +284,38 @@ async def get_users(req : Request):
 
 
 @app.post("/set-consent")
-async def set_consent(consent: ConsentForm, response: Response):
+async def set_consent(req: Request, consent: ConsentForm):
     consent.necessary_cookies = True
+ 
+    user_id = req.state.user["user_id"] 
+
+    users = await access_collection("users")
+    users.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"cookie_consent": consent.model_dump()}}
+    )
+
+    return {"detail": "Preferences saved"}
+
+@app.put("/update-consent")
+async def update_consent(req: Request, consent: ConsentForm):
+    user_id = req.state.user["user_id"]
+    consent.necessary_cookies = True  # Toujours forcé
     
-    consent_str = json.dumps(consent.model_dump())
-
-    response.set_cookie(
-        key="cookie_consent",
-        value=consent_str,
-        max_age=60 * 60 * 24 * 365,  # 1 year
-        path="/",
-        samesite="Lax",
-        secure=False  # In a production setup, this sould be set to TRUE !!!!!!
+    users = await access_collection("users")
+    users.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"cookie_consent": consent.model_dump()}}
     )
 
-    return JSONResponse(
-        {"detail": "Consent saved"},
-        status_code=HTTP_200_OK
-    )
+    return {"detail": "Consent updated"}
 
+@app.get("/get-consent")
+async def get_consent(req: Request):
+    user_id = req.state.user["user_id"]
+    users = await access_collection("users")
+    user = users.find_one({"_id": ObjectId(user_id)})
+    if not user or "cookie_consent" not in user:
+        return JSONResponse({"detail": "No consent found"}, status_code=HTTP_404_NOT_FOUND)
+    return {"detail": "Consent retrieved", "consent": user["cookie_consent"]}
 
-# @app.get("/get-consent")
-# async def get_consent(request: Request):
-#     consent_cookie = request.cookies.get("cookie_consent")
-
-#     if not consent_cookie:
-#         return JSONResponse(
-#             {"detail": "No consent found"},
-#             status_code=HTTP_404_NOT_FOUND
-#         )
-#     try:
-#         consent_data = json.loads(consent_cookie)
-#         return JSONResponse(
-#             {"detail": "Consent retrieved", "consent": consent_data},
-#             status_code=HTTP_200_OK
-#         )
-#     except json.JSONDecodeError:
-#         return JSONResponse(
-#             {"detail": "Incorrect consent"},
-#             status_code=HTTP_500_INTERNAL_SERVER_ERROR
-#         )

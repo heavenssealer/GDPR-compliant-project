@@ -1,4 +1,4 @@
-from fastapi import Request
+from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
 from bson import ObjectId
@@ -10,7 +10,7 @@ import os
 
 
 SECRET_KEY = os.getenv("JWT_SECRET", "TEST")
-EXEMPT_PATHS = {"/register", "/login", "/set-consent"}
+EXEMPT_PATHS = {"/register", "/login"}
 MONGO_URI = os.getenv("MONGO_URI")
 
 async def authentication_middleware(req: Request, call_next):
@@ -22,7 +22,7 @@ async def authentication_middleware(req: Request, call_next):
     # Let CORS preflight through
     if req.method == "OPTIONS":
         return await call_next(req)
-    
+
     try:
         auth = req.headers.get("Authorization")
         if not auth:
