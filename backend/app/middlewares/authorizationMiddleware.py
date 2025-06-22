@@ -1,4 +1,4 @@
-from fastapi import Request
+from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
 
@@ -9,7 +9,7 @@ import os
 
 
 SECRET_KEY = os.getenv("JWT_SECRET", "TOTO")
-EXEMPT_PATHS = {"/register", "/login", "/post", "/user"}
+EXEMPT_PATHS = {"/register", "/login", "/post", "/user", "/set-consent", "/update-consent", "/get-consent"}
 
 
 async def authorization_middleware(req: Request, call_next):
@@ -18,6 +18,7 @@ async def authorization_middleware(req: Request, call_next):
     # Let CORS preflight through
     if req.method == "OPTIONS":
         return await call_next(req)
+
     try:
         user = await user_details(req.state.user["user_id"])
         if user["role"] != "admin" : 

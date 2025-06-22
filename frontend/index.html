@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Front-End</title>
+    <!-- Bulma CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
+    />
+    <style>
+      #cookie-banner {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #f1f1f1;
+        padding: 1em;
+        box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 1000;
+      }
+      #cookie-buttons {
+        margin-top: 0.5em;
+      }
+      #cookie-buttons button {
+        margin: 0 0.25em;
+        padding: 0.5em 1em;
+      }
+      #personalize-options {
+        display: none;
+        margin-top: 0.5em;
+      }
+      #personalize-options label {
+        display: block;
+        margin: 0.25em 0;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="section">
+      <div class="container">
+        <h1 class="title has-text-centered">
+          Front-end : "blog" website (or something similar?)
+        </h1>
+        <div id="output" class="notification is-light">
+          <em>Responses will appear here</em>
+        </div>
+
+        <!-- COOKIE BANNER -->
+        <!-- <div id="cookie-banner">
+          <div>
+            This website uses cookies. You can accept, reject, or customize the cookies you want to allow.
+          </div>
+          <div id="cookie-buttons">
+            <button onclick="acceptAll()">Accept all</button>
+            <button onclick="refuseAll()">Reject all but necessary</button>
+            <button onclick="togglePersonalize()">Customize</button>
+          </div>
+          <div id="personalize-options" style="display: none;">
+            <label
+              ><input type="checkbox" id="analytics" checked /> Allow analytics cookies</label
+            >
+            <label
+              ><input type="checkbox" id="marketing" checked /> Allow
+              marketing coookies</label
+            >
+            <label
+              ><input type="checkbox" id="partners" checked /> Allow
+              partners cookies</label
+            >
+            <label>
+              <input type="checkbox" id="required" checked disabled/>
+              Necessary cookies
+            </input>
+            </label>
+            <button onclick="savePersonalize()">Save my choices</button>
+          </div>
+          <div style="margin-top: 1em;">
+              <a href="javascript:void(0);" style="font-size: 0.9em; color: #0073e6;" onclick="toggleGdprInfo()">Learn more about how we process your data (GDPR)</a>
+            </div>
+        </div> -->
+
+        <div id="cookie-banner" style="background: #f9f9f9; padding: 1em; box-shadow: 0 2px 6px rgba(0,0,0,0.2); border-radius: 4px;">
+          <div>
+            This website uses cookies. You can accept, reject, or customize the cookies you want to allow.
+          </div>
+          <div id="cookie-buttons" style="margin-top: 0.5em;">
+            <button onclick="acceptAll()">Accept all</button>
+            <button onclick="refuseAll()">Reject all but necessary</button>
+            <button onclick="togglePersonalize()">Customize</button>
+          </div>
+          <div id="personalize-options" style="display: none; margin-top: 0.5em;">
+            <label><input type="checkbox" id="analytics" checked /> Allow analytics cookies</label><br />
+            <label><input type="checkbox" id="marketing" checked /> Allow marketing cookies</label><br />
+            <label><input type="checkbox" id="partners" checked /> Allow partners cookies</label><br />
+            <label><input type="checkbox" id="required" checked disabled /> Necessary cookies</label><br />
+            <button onclick="savePersonalize()" style="margin-top: 0.5em;">Save my choices</button>
+          </div>
+          <div style="margin-top: 1em;">
+            <a href="javascript:void(0);" style="font-size: 0.9em; color: #0073e6;" onclick="toggleGdprInfo()">Learn more about how we process your data (GDPR)</a>
+          </div>
+          <div id="gdpr-info" style="display: none; font-size: 0.85em; background: #f0f0f0; padding: 0.5em; margin-top: 0.5em; border-radius: 4px;">
+            <p>
+              In accordance with the <strong>General Data Protection Regulation (GDPR - EU 2016/679)</strong> and <strong>French national legislation (Loi Informatique et Libertés)</strong>, we process data as follows:
+            </p>
+            <ul>
+              <li><strong>Necessary cookies</strong>: Ensure core website functions (security, access, preferences).</li>
+              <li><strong>Analytics cookies</strong>: Help us improve the site by analyzing visitor behavior (anonymized when possible).</li>
+              <li><strong>Marketing cookies</strong>: Allow us to show personalized offers and ads.</li>
+              <li><strong>Partners cookies</strong>: Allow sharing with technical/commercial partners for service delivery and marketing.</li>
+            </ul>
+            <p>
+              You can exercise your rights of access, rectification, erasure, and restriction of processing at any time. Contact: <em>dpo@example.com</em>.
+            </p>
+          </div>
+        </div>
+
+        <!-- COOKIE CHANGE -->
+         <!-- <div id="consent-update-box" style="display: none; background: #f9f9f9; padding: 1em; box-shadow: 0 2px 6px rgba(0,0,0,0.2); margin-bottom: 1em;">
+            <h3 class="subtitle">Modify My Consent</h3>
+            <label><input type="checkbox" id="update-analytics" /> Allow analytics cookies</label>
+            <label><input type="checkbox" id="update-marketing" /> Allow marketing cookies</label>
+            <label><input type="checkbox" id="update-partners" /> Allow partners cookies</label>
+            <label><input type="checkbox" id="update-necessary" checked disabled /> Necessary cookies (always enabled)</label>
+            <div style="margin-top: 0.5em;">
+              <button class="button is-success" onclick="submitConsentUpdate()">Save my consent</button>
+              <button class="button is-light" onclick="hideConsentUpdate()">Cancel</button>
+            </div>
+          </div> -->
+          <div id="consent-update-box" style="display: none; background: #f9f9f9; padding: 1em; box-shadow: 0 2px 6px rgba(0,0,0,0.2); margin-bottom: 1em;">
+            <h3 class="subtitle">Modify My Consent</h3>
+            <label><input type="checkbox" id="update-analytics" /> Allow analytics cookies</label>
+            <label><input type="checkbox" id="update-marketing" /> Allow marketing cookies</label>
+            <label><input type="checkbox" id="update-partners" /> Allow partners cookies</label>
+            <label><input type="checkbox" id="update-necessary" checked disabled /> Necessary cookies (always enabled)</label>
+            <div style="margin-top: 0.5em;">
+              <button class="button is-success" onclick="submitConsentUpdate()">Save my consent</button>
+              <button class="button is-light" onclick="hideConsentUpdate()">Cancel</button>
+            </div>
+            <div style="margin-top: 1em;">
+              <a href="javascript:void(0);" style="font-size: 0.9em; color: #0073e6;" onclick="toggleGdprInfo()">Learn more about how we process your data (GDPR)</a>
+            </div>
+          </div>
+
+          <section id="gdpr-info" style="background: #f0f0f0; padding: 1em; margin-top: 1em; display: none;">
+            <h3>How We Process Your Data (GDPR Information)</h3>
+            <p>
+              In accordance with the <strong>General Data Protection Regulation (GDPR - EU 2016/679)</strong> and <strong>French national legislation (Loi Informatique et Libertés, modified)</strong>,
+              we inform you that:
+            </p>
+            <ul>
+              <li><strong>Necessary cookies</strong> are essential for the functioning of our website and cannot be disabled. They ensure security, network management, and accessibility.</li>
+              <li><strong>Analytics cookies</strong> help us understand how visitors interact with our site to improve user experience. Data is anonymized where possible.</li>
+              <li><strong>Marketing cookies</strong> are used to deliver advertisements more relevant to you and your interests. These may involve profiling activities for advertising purposes.</li>
+              <li><strong>Partners cookies</strong> allow data sharing with our commercial and technical partners for joint services or advertising campaigns.</li>
+            </ul>
+            <p>
+              All data processing is done in compliance with European and French data protection laws.
+              You have the right to access, rectify, erase, and limit the processing of your data at any time. 
+              For any inquiries or to exercise your rights, please contact our Data Protection Officer at <em>dpo@example.com</em>.
+            </p>
+          </section>
+
+          <script>
+            function toggleGdprInfo() {
+              const gdprSection = document.getElementById('gdpr-info');
+              if (gdprSection.style.display === 'none') {
+                gdprSection.style.display = 'block';
+              } else {
+                gdprSection.style.display = 'none';
+              }
+            }
+          </script> 
+
+
+
+        <!-- REGISTER -->
+        <!-- <div class="box">
+          <h2 class="subtitle">Register</h2>
+          <div class="field">
+            <label class="label">Email</label>
+            <div class="control">
+              <input
+                id="reg-email"
+                class="input"
+                type="email"
+                placeholder="you@example.com"
+              />
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Password</label>
+            <div class="control">
+              <input
+                id="reg-pass"
+                class="input"
+                type="password"
+                placeholder="••••••••"
+              />
+            </div>
+          </div>
+          <div class="control">
+            <button class="button is-primary" onclick="register()">
+              Register
+            </button>
+          </div>
+        </div> -->
+
+        <!-- REGISTER -->
+        <div class="box">
+          <h2 class="subtitle">Register</h2>
+          <div class="field">
+            <label class="label">Email</label>
+            <div class="control">
+              <input
+                id="reg-email"
+                class="input"
+                type="email"
+                placeholder="you@example.com"
+              />
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Password</label>
+            <div class="control">
+              <input
+                id="reg-pass"
+                class="input"
+                type="password"
+                placeholder="••••••••"
+              />
+            </div>
+          </div>
+          <p style="font-size: 0.9em; margin-top: 0.5em;">
+            By registering, you accept our <strong>terms and agreements</strong> about how we collect and process your data in accordance with GDPR and French law.
+            <button class="button is-small is-text" style="padding: 0; margin-left: 0.3em;" onclick="toggleDataInfo()">Learn more</button>
+          </p>
+          <div id="data-info" style="display: none; font-size: 0.85em; background: #f0f0f0; padding: 0.5em; margin-top: 0.5em; border-radius: 4px;">
+            <p>
+              We collect and process your data to create and manage your account, provide services, and improve our platform. Data may include your email, login activity, and preferences.
+            </p>
+            <ul>
+              <li><strong>Necessary data</strong> is required for account management and security.</li>
+              <li><strong>Analytics data</strong> helps us improve the service (anonymized where possible).</li>
+              <li><strong>Marketing data</strong> is only processed with your consent for personalized offers.</li>
+              <li><strong>Partner data</strong> may be shared with trusted partners for technical or commercial purposes.</li>
+            </ul>
+            <p>
+              This processing is done in compliance with the <strong>General Data Protection Regulation (GDPR - EU 2016/679)</strong> and <strong>French national legislation</strong>. 
+              You have rights of access, rectification, erasure, and restriction of processing. Contact: <em>dpo@example.com</em>.
+            </p>
+          </div>
+          <div class="control" style="margin-top: 1em;">
+            <button class="button is-primary" onclick="register()">
+              Register
+            </button>
+          </div>
+        </div>
+
+        <script>
+          function toggleDataInfo() {
+            const info = document.getElementById('data-info');
+            if (info.style.display === 'none') {
+              info.style.display = 'block';
+            } else {
+              info.style.display = 'none';
+            }
+          }
+        </script>
+
+
+        <!-- LOGIN -->
+        <div class="box">
+          <h2 class="subtitle">Login</h2>
+          <div class="field">
+            <label class="label">Email</label>
+            <div class="control">
+              <input
+                id="login-email"
+                class="input"
+                type="email"
+                placeholder="you@example.com"
+              />
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Password</label>
+            <div class="control">
+              <input
+                id="login-pass"
+                class="input"
+                type="password"
+                placeholder="••••••••"
+              />
+            </div>
+          </div>
+          <div class="control">
+            <button class="button is-link" onclick="login()">Log In</button>
+          </div>
+        </div>
+
+        <!-- POSTS CRUD -->
+        <div class="box">
+          <h2 class="subtitle">Posts CRUD</h2>
+          <div class="field">
+            <label class="label">Title</label>
+            <div class="control">
+              <input
+                id="post-title"
+                class="input"
+                type="text"
+                placeholder="Post title"
+              />
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Content</label>
+            <div class="control">
+              <textarea
+                id="post-content"
+                class="textarea"
+                rows="3"
+                placeholder="Your content…"
+              ></textarea>
+            </div>
+          </div>
+          <div class="buttons">
+            <button class="button is-success" onclick="createPost()">
+              Create
+            </button>
+            <button class="button is-info" onclick="readPost()">Read</button>
+            <button class="button is-warning" onclick="updatePost()">
+              Update
+            </button>
+            <button class="button is-danger" onclick="deletePost()">
+              Delete
+            </button>
+          </div>
+        </div>
+
+        <!-- USER SELF -->
+        <div class="box">
+          <h2 class="subtitle">User Management</h2>
+          <div class="field">
+            <label class="label">New Email</label>
+            <div class="control">
+              <input
+                id="user-new-email"
+                class="input"
+                type="email"
+                placeholder="new@example.com"
+              />
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Confirm Password</label>
+            <div class="control">
+              <input
+                id="user-pass"
+                class="input"
+                type="password"
+                placeholder="••••••••"
+              />
+            </div>
+          </div>
+          <div class="buttons">
+            <button class="button is-link" onclick="updateEmail()">
+              Update Email
+            </button>
+            <button class="button is-primary" onclick="getUser()">
+              Get My Info
+            </button>
+            <button class="button is-danger" onclick="deleteUser()">
+              Delete My Account
+            </button>
+            <button class="button is-warning" onclick="showConsentUpdate()">Modify My Consent</button>
+            
+          </div>
+        </div>
+
+        <!-- ADMIN: list all users -->
+        <div class="box">
+          <h2 class="subtitle">Admin: List All Users</h2>
+          <div class="control">
+            <button class="button is-dark" onclick="getUsers()">
+              Get Users
+            </button>
+          </div>
+        </div>
+
+        <div class="box">
+
+          <h3>Full GDPR Compliance Measures</h3>
+
+          <p>
+            Our platform complies with the <strong>General Data Protection Regulation (GDPR - EU 2016/679)</strong> and <strong>French national data protection law</strong>. Below is an overview of our measures and user rights regarding personal data.
+          </p>
+
+          <ul>
+            <li><strong>Privacy Policy & Terms:</strong><br />
+              Users can access our <a href="/privacy-policy">Privacy Policy</a> and <a href="/terms">Terms of Service</a> at any time via our website footer or cookie banner.
+            </li>
+
+            <li style="margin-top: 0.5em;"><strong>Right to Withdraw or Change Consent:</strong><br />
+              Users can modify or withdraw their consent at any time via their account settings, the cookie banner, or by contacting our Data Protection Officer. These options are always accessible from the site footer.
+            </li>
+
+            <li style="margin-top: 0.5em;"><strong>Data Retention & Deletion:</strong><br />
+              Personal data is retained only as long as necessary for the purpose it was collected, and in accordance with legal obligations. Users can request deletion of their data (“right to be forgotten”) at any time by contacting our DPO.
+            </li>
+
+            <li style="margin-top: 0.5em;"><strong>Data Access & Portability:</strong><br />
+              Users have the right to obtain a copy of their personal data in a machine-readable format. Requests can be sent to the DPO at <a href="mailto:dpo@example.com">dpo@example.com</a>.
+            </li>
+
+            <li style="margin-top: 0.5em;"><strong>Breach Notification:</strong><br />
+              In the event of a personal data breach that is likely to result in a risk to your rights and freedoms, we will notify affected users within 72 hours, in compliance with GDPR Article 33.
+            </li>
+
+            <li style="margin-top: 0.5em;"><strong>Legal Basis for Processing:</strong><br />
+              We process data on the following legal bases:
+              <ul>
+                <li>Performance of a contract (e.g. managing your account)</li>
+                <li>User consent (e.g. marketing communications, cookies)</li>
+                <li>Legitimate interest (e.g. ensuring security, preventing fraud)</li>
+                <li>Legal obligations (e.g. tax compliance)</li>
+              </ul>
+            </li>
+
+            <li style="margin-top: 0.5em;"><strong>Consent History Logging:</strong><br />
+              We maintain records of user consent decisions (including time, date, and version of our terms) to demonstrate compliance with GDPR.
+            </li>
+
+            <li style="margin-top: 0.5em;"><strong>Accessibility & Language Support:</strong><br />
+              Our consent interfaces are designed to be accessible (keyboard navigation, screen reader compatible). Information is provided in the primary languages of the regions we serve.
+            </li>
+          </ul>
+
+          <h4 style="margin-top: 1em;">Contact Information</h4>
+          <ul style="list-style-type: none; padding-left: 0;">
+            <li><strong>Data Protection Officer (DPO):</strong><br />
+              Email: <a href="mailto:dpo@example.com">dpo@example.com</a>
+            </li>
+            <li style="margin-top: 0.5em;"><strong>Marketing Data Inquiries:</strong><br />
+              Email: <a href="mailto:marketing-privacy@example.com">marketing-privacy@example.com</a>
+            </li>
+            <li style="margin-top: 0.5em;"><strong>Technical Data Requests (Analytics, Partners):</strong><br />
+              Email: <a href="mailto:tech-privacy@example.com">tech-privacy@example.com</a>
+            </li>
+            <li style="margin-top: 0.5em;"><strong>General Privacy Queries:</strong><br />
+              Email: <a href="mailto:privacy@example.com">privacy@example.com</a>
+            </li>
+          </ul>
+          <p style="margin-top: 0.5em;">We aim to respond to all requests within 30 days.</p>
+        </div>
+      </div>
+    </section>
+</section>
+
+<footer class="footer has-background-light">
+  <div class="content has-text-centered">
+    <p>
+      <strong>[Your Company Name]</strong> — © 2024 All rights reserved.
+    </p>
+    <p>
+      Registered office: 123 Rue Fictive, 75000 Paris, France<br>
+      SIRET: 123 456 789 00010 — VAT: FR12 345678901
+    </p>
+    <p>
+      Publication Director: John Doe<br>
+      Hosting by: HostingCo, 456 Web St, 75001 Paris, France
+    </p>
+    <p>
+      <a href="/privacy-policy">Privacy Policy</a> |
+      <a href="/terms">Terms of Service</a> |
+      <a href="/cookie-policy">Cookie Policy</a> |
+      <a href="mailto:legal@example.com">Contact Legal</a>
+    </p>
+  </div>
+</footer>
+
+
+
+    <script>
+      const API = "https://localhost:443"; // adjust if needed
+      const outEl = document.getElementById("output");
+
+      function show(data) {
+        outEl.className = "notification is-light";
+        outEl.innerHTML = ""; // clear previous
+        const pre = document.createElement("pre");
+        pre.textContent = JSON.stringify(data, null, 2);
+        outEl.appendChild(pre);
+      }
+
+      function errorMsg(msg) {
+        outEl.className = "notification is-danger";
+        outEl.textContent = msg;
+      }
+
+      function authHeaders() {
+        const token = localStorage.getItem("jwt");
+        return token ? { Authorization: "Bearer " + token } : {};
+      }
+
+      async function request(path, opts = {}) {
+        try {
+          const res = await fetch(API + path, opts);
+          const data = await res.json();
+          if (!res.ok) throw data;
+          return data;
+        } catch (err) {
+          errorMsg(err.detail || JSON.stringify(err));
+          throw err;
+        }
+      }
+
+      async function register() {
+        const email = document.getElementById("reg-email").value;
+        const password = document.getElementById("reg-pass").value;
+        const data = await request("/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...authHeaders() },
+          body: JSON.stringify({ email, password }),
+        });
+        show(data);
+      }
+
+      async function login() {
+        const email = document.getElementById("login-email").value;
+        const password = document.getElementById("login-pass").value;
+        const data = await request("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        show(data);
+        if (data.token) {
+          localStorage.setItem("jwt", data.token);
+
+          const consentCookie = document.cookie
+            .split("; ")
+            .find(row => row.startsWith("cookie_consent="));
+          
+          if (consentCookie) {
+            const consentStr = decodeURIComponent(consentCookie.split("=")[1]);
+            try {
+              const consent = JSON.parse(consentStr);
+              await request("/set-consent", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${data.token}`
+                },
+                body: JSON.stringify(consent)
+              });
+            } catch (e) {
+              console.error("Invalid consent cookie", e);
+            }
+          }
+        } 
+      }
+
+      async function createPost() {
+        const title = document.getElementById("post-title").value;
+        const content = document.getElementById("post-content").value;
+        const data = await request("/post", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...authHeaders() },
+          body: JSON.stringify({ title, content }),
+        });
+        show(data);
+      }
+
+      async function readPost() {
+        const title = document.getElementById("post-title").value;
+        const url = "/post?" + new URLSearchParams({ title });
+        const data = await request(url, {
+          method: "GET",
+          headers: {...authHeaders()},
+        });
+        show(data);
+      }
+
+      async function updatePost() {
+        const title = document.getElementById("post-title").value;
+        const content = document.getElementById("post-content").value;
+        const data = await request("/post", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", ...authHeaders() },
+          body: JSON.stringify({ title, content }),
+        });
+        show(data);
+      }
+
+      async function deletePost() {
+        const title = document.getElementById("post-title").value;
+        const data = await request("/post", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json", ...authHeaders() },
+          body: JSON.stringify({ title }),
+        });
+        show(data);
+      }
+
+      async function updateEmail() {
+        const email = document.getElementById("user-new-email").value;
+        const password = document.getElementById("user-pass").value;
+        const data = await request("/user", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", ...authHeaders() },
+          body: JSON.stringify({ email, password }),
+        });
+        show(data);
+      }
+
+      async function getUser() {
+        const data = await request("/user", { headers: authHeaders() });
+        show(data);
+      }
+
+      async function deleteUser() {
+        const email = document.getElementById("user-new-email").value;
+        const password = document.getElementById("user-pass").value;
+        const data = await request("/user", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json", ...authHeaders() },
+          body: JSON.stringify({ email, password }),
+        });
+        show(data);
+        if (data.detail === "Deleted all user related content") {
+          localStorage.removeItem("jwt");
+        }
+      }
+
+      async function getUsers() {
+        const data = await request("/users", { headers: authHeaders() });
+        show(data);
+      }
+
+      async function setConsentCookie(consent) {
+        const consentStr = JSON.stringify(consent);
+        document.cookie = `cookie_consent=${encodeURIComponent(consentStr)};path=/;max-age=${60 * 60 * 24 * 365};secure;samesite=lax`;
+
+        // Seulement si l'utilisateur est connecté
+        if (localStorage.getItem("jwt")) {
+          let response = await request(
+            "/set-consent",
+            {
+              method: "POST", 
+              headers: {
+                "Content-Type": "application/json",
+                ...authHeaders()
+              },
+              body: JSON.stringify(consent)
+            }
+          );
+          show(response);
+        }
+      }
+
+
+      function acceptAll() {
+        setConsentCookie({
+          necessary_cookies: true,
+          analytics_cookies: true,
+          marketing_cookies: true,
+          partners_cookies: true,
+        });
+        hideBanner();
+      }
+
+      function refuseAll() {
+        setConsentCookie({
+          necessary_cookies: true,
+          analytics_cookies: false,
+          marketing_cookies: false,
+          partners_cookies: false,
+        });
+        hideBanner();
+      }
+
+      function togglePersonalize() {
+        const options = document.getElementById("personalize-options");
+        options.style.display =
+          options.style.display === "none" ? "block" : "none";
+      }
+
+      function savePersonalize() {
+        setConsentCookie({
+          necessary_cookies: true,
+          analytics_cookies: document.getElementById("analytics").checked,
+          marketing_cookies: document.getElementById("marketing").checked,
+          partners_cookies: document.getElementById("partners").checked,
+        });
+        hideBanner();
+      }
+
+      function hideBanner() {
+        document.getElementById("cookie-banner").style.display = "none";
+      }
+
+      // Optionnel : vérifier si cookie déjà présent
+      window.onload = function () {
+        if (document.cookie.includes("cookie_consent=")) {
+          hideBanner();
+        }
+      };
+
+      async function getConsent() {
+        const token = localStorage.getItem("jwt");
+        const data = await request("/get-consent", {
+          method: "GET",
+          headers: {
+            "Authorization": "Bearer " + token
+          }
+        });
+        show(data);
+      }
+
+      async function updateConsent(consent) {
+        const token = localStorage.getItem("jwt");
+        if (!token) {
+          errorMsg("You must be logged in to update consent");
+          return;
+        }
+
+        const data = await request("/update-consent", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify(consent)
+        });
+        show(data);
+      }
+
+      function showConsentUpdate() {
+        document.getElementById("consent-update-box").style.display = "block";
+      }
+
+      function hideConsentUpdate() {
+        document.getElementById("consent-update-box").style.display = "none";
+      }
+
+      async function submitConsentUpdate() {
+        const consent = {
+          necessary_cookies: true,
+          analytics_cookies: document.getElementById("update-analytics").checked,
+          marketing_cookies: document.getElementById("update-marketing").checked,
+          partners_cookies: document.getElementById("update-partners").checked
+        };
+
+        const token = localStorage.getItem("jwt");
+        if (!token) {
+          errorMsg("You must be logged in to update your consent");
+          return;
+        }
+
+        const data = await request("/update-consent", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify(consent)
+        });
+
+        show(data);
+      
+        const consentStr = JSON.stringify(consent);
+        document.cookie = `cookie_consent=${encodeURIComponent(consentStr)};path=/;max-age=${60 * 60 * 24 * 365};secure;samesite=lax`;
+
+        hideConsentUpdate();
+      }
+
+    </script>
+  </body>
+</html>

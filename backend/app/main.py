@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response 
 from fastapi.responses import JSONResponse
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi import Query
 from starlette.status import HTTP_409_CONFLICT, HTTP_500_INTERNAL_SERVER_ERROR, HTTP_201_CREATED, HTTP_200_OK, HTTP_401_UNAUTHORIZED, HTTP_429_TOO_MANY_REQUESTS, HTTP_404_NOT_FOUND
 from dotenv import load_dotenv
@@ -14,6 +15,7 @@ from pymongo.collection import Collection
 
 from app.models.post import Post
 from app.models.connectionDetails import ConnectionDetails
+from app.models.consentForm import ConsentForm
 from app.middlewares.authenticationMiddleware import authentication_middleware
 from app.middlewares.authorizationMiddleware import authorization_middleware
 from app.middlewares.sanitizationMiddleware import sanitization_middleware
@@ -21,6 +23,7 @@ from app.utility.utility import access_collection, get_all_users
 from app.utility.utility import generate_jwt
 
 import os 
+import json
 
 pwd_context = CryptContext(schemes=["argon2"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -40,11 +43,13 @@ AF = "Authentication failure"
 # initializing the app 
 app = FastAPI()
 
+app.add_middleware(HTTPSRedirectMiddleware)
+
 app.add_middleware(
     CORSMiddleware, 
-    allow_origins=["http://localhost:8080"],
+    allow_origins=["http://localhost:8080", "https://localhost:8080", "https://127.0.0.1:8080"],
     allow_methods=["POST", "GET", "OPTIONS", "PUT", "DELETE"], 
-    allow_headers=["Content-Type", "Authorization"], 
+    allow_headers=["*"], 
     allow_credentials=True
 )
 
@@ -99,7 +104,8 @@ async def login(data : ConnectionDetails):
                 user_id = str(user['_id'])
                 # generating the JWT 
                 encoded_jwt = generate_jwt(user_id=user_id, email=email)
-                return JSONResponse({"detail" : "Authentication success", "token" : encoded_jwt}, status_code=HTTP_200_OK)
+                response = JSONResponse({"detail" : "Authentication success", "token" : encoded_jwt}, status_code=HTTP_200_OK)
+                return response
             else : 
                 # if incorrect password, adding 1 connection attempt
                 connection_attempts += 1 
@@ -275,4 +281,41 @@ async def get_users(req : Request):
         return JSONResponse({"detail" : users}, status_code=HTTP_200_OK)
     except Exception  : 
         return JSONResponse({"detail" : ISE}, status_code=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@app.post("/set-consent")
+async def set_consent(req: Request, consent: ConsentForm):
+    consent.necessary_cookies = True
+ 
+    user_id = req.state.user["user_id"] 
+
+    users = await access_collection("users")
+    users.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"cookie_consent": consent.model_dump()}}
+    )
+
+    return {"detail": "Preferences saved"}
+
+@app.put("/update-consent")
+async def update_consent(req: Request, consent: ConsentForm):
+    user_id = req.state.user["user_id"]
+    consent.necessary_cookies = True  # Toujours forcé
+    
+    users = await access_collection("users")
+    users.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"cookie_consent": consent.model_dump()}}
+    )
+
+    return {"detail": "Consent updated"}
+
+@app.get("/get-consent")
+async def get_consent(req: Request):
+    user_id = req.state.user["user_id"]
+    users = await access_collection("users")
+    user = users.find_one({"_id": ObjectId(user_id)})
+    if not user or "cookie_consent" not in user:
+        return JSONResponse({"detail": "No consent found"}, status_code=HTTP_404_NOT_FOUND)
+    return {"detail": "Consent retrieved", "consent": user["cookie_consent"]}
 
