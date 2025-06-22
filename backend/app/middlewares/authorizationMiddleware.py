@@ -9,7 +9,7 @@ import os
 
 
 SECRET_KEY = os.getenv("JWT_SECRET", "TOTO")
-EXEMPT_PATHS = {"/register", "/login", "/post", "/user"}
+EXEMPT_PATHS = {"/register", "/login", "/post", "/user", "/set-consent"}
 
 
 async def authorization_middleware(req: Request, call_next):

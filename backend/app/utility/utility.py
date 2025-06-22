@@ -18,12 +18,12 @@ ALGORITHM = "HS256"
 
 # function to generate a json webtoken (JWT) if the user exists and the password is correct 
 def generate_jwt(user_id : str, email : str):
-    delta = timedelta(minutes=int(LIVING_TIME))
-    payload = { 
-        "user_id" : user_id,
+    delta : timedelta = timedelta(minutes=int(LIVING_TIME))
+    payload : dict = { 
+        "user_id" : user_id ,
         "email" : email
     }
-    jwt_expires = datetime.now(timezone.utc) + delta
+    jwt_expires : datetime = datetime.now(timezone.utc) + delta
     payload.update({'exp' : jwt_expires})
     return jwt.encode(payload, SECRET_KEY, algorithm = ALGORITHM)
 
@@ -35,7 +35,7 @@ async def user_details(id:str):
     user = users.find_one(query)
     return user 
 
-async def get_all_users(): 
+async def get_all_users() -> list[Collection] : 
     client = await connect_to_db(uri=MONGO_URI)
     db = client.get_database('website')
     users = db.get_collection("users")

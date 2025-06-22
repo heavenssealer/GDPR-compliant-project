@@ -1,0 +1,31 @@
+@startuml
+actor "User" as User
+participant "Frontend (JS / HTML)" as Frontend
+participant "Backend (FastAPI)" as Backend
+database "Base (optionnel)" as DB
+
+== Première visite ==
+User -> Frontend : Accède au site
+Frontend -> User : Affiche bandeau consentement
+
+== Choix utilisateur ==
+User -> Frontend : Clique Accepter / Refuser / Personnaliser
+Frontend -> Backend : POST /set-consent { consentement }
+Backend -> Backend : Génère cookie_consent
+Backend --> Frontend : Set-Cookie: cookie_consent=...
+
+Backend -> DB : (Optionnel) Enregistre consentement
+DB --> Backend : OK
+
+== Navigation ==
+User -> Frontend : Accède à une page
+Frontend -> Backend : GET /page avec cookies
+Backend -> Backend : Lit cookie_consent
+alt Cookies analytics autorisés
+Backend -> "Services tiers" : Envoie données / active tracking
+else Cookies analytics refusés
+Backend -> Backend : Ne fait rien côté tracking
+end
+Backend --> Frontend : Réponse avec cookies nécessaires uniquement
+
+@enduml

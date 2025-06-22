@@ -10,7 +10,7 @@ import os
 
 
 SECRET_KEY = os.getenv("JWT_SECRET", "TEST")
-EXEMPT_PATHS = {"/register", "/login"}
+EXEMPT_PATHS = {"/register", "/login", "/set-consent"}
 MONGO_URI = os.getenv("MONGO_URI")
 
 async def authentication_middleware(req: Request, call_next):

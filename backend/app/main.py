@@ -1,6 +1,6 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response 
 from fastapi.responses import JSONResponse
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
@@ -15,6 +15,7 @@ from pymongo.collection import Collection
 
 from app.models.post import Post
 from app.models.connectionDetails import ConnectionDetails
+from app.models.consentForm import ConsentForm
 from app.middlewares.authenticationMiddleware import authentication_middleware
 from app.middlewares.authorizationMiddleware import authorization_middleware
 from app.middlewares.sanitizationMiddleware import sanitization_middleware
@@ -22,6 +23,7 @@ from app.utility.utility import access_collection, get_all_users
 from app.utility.utility import generate_jwt
 
 import os 
+import json
 
 pwd_context = CryptContext(schemes=["argon2"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -102,7 +104,17 @@ async def login(data : ConnectionDetails):
                 user_id = str(user['_id'])
                 # generating the JWT 
                 encoded_jwt = generate_jwt(user_id=user_id, email=email)
-                return JSONResponse({"detail" : "Authentication success", "token" : encoded_jwt}, status_code=HTTP_200_OK)
+                response = JSONResponse({"detail" : "Authentication success", "token" : encoded_jwt}, status_code=HTTP_200_OK)
+                response.set_cookie(
+                    key="access_token",
+                    value=encoded_jwt,
+                    httponly=True,
+                    secure=False ,  # needs to be TRUE if HTTPS (prod)
+                    samesite="Lax",
+                    path="/", 
+                    max_age=60*60*24*7  # 7 days
+                )
+                return response
             else : 
                 # if incorrect password, adding 1 connection attempt
                 connection_attempts += 1 
@@ -279,3 +291,45 @@ async def get_users(req : Request):
     except Exception  : 
         return JSONResponse({"detail" : ISE}, status_code=HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+@app.post("/set-consent")
+async def set_consent(consent: ConsentForm, response: Response):
+    consent.necessary_cookies = True
+    
+    consent_str = json.dumps(consent.model_dump())
+
+    response.set_cookie(
+        key="cookie_consent",
+        value=consent_str,
+        max_age=60 * 60 * 24 * 365,  # 1 year
+        path="/",
+        samesite="Lax",
+        secure=False  # In a production setup, this sould be set to TRUE !!!!!!
+    )
+
+    return JSONResponse(
+        {"detail": "Consent saved"},
+        status_code=HTTP_200_OK
+    )
+
+
+# @app.get("/get-consent")
+# async def get_consent(request: Request):
+#     consent_cookie = request.cookies.get("cookie_consent")
+
+#     if not consent_cookie:
+#         return JSONResponse(
+#             {"detail": "No consent found"},
+#             status_code=HTTP_404_NOT_FOUND
+#         )
+#     try:
+#         consent_data = json.loads(consent_cookie)
+#         return JSONResponse(
+#             {"detail": "Consent retrieved", "consent": consent_data},
+#             status_code=HTTP_200_OK
+#         )
+#     except json.JSONDecodeError:
+#         return JSONResponse(
+#             {"detail": "Incorrect consent"},
+#             status_code=HTTP_500_INTERNAL_SERVER_ERROR
+#         )
